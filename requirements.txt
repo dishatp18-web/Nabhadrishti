@@ -1,0 +1,28 @@
+# --- Core server ---
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.6
+
+# --- Computer vision ---
+opencv-python>=4.9
+numpy>=1.24
+
+# --- Offline voice alerts (SIH requirement: voice-based alerts) ---
+pyttsx3>=2.90
+
+# --- Heavy models (optional but recommended for full accuracy) ---
+# ultralytics ships with torch; install only if you want real YOLOv8:
+#   ultralytics>=8.2
+# For --wide open-vocabulary detection (pen, pencil, spectacles,
+# headphones, ...), ultralytics downloads yolov8s-worldv2 automatically
+# on first run (~50 MB), then works fully offline.
+# mediapipe:
+#   mediapipe>=0.10
+# torch is required only to TRAIN/LOAD the GRU action model:
+#   torch>=2.2
+
+# NOTE: The system degrades gracefully when ultralytics/mediapipe are absent:
+#   - object detection falls back to a classic-CV saturated-blob detector
+#   - hand tracking is disabled (no hands drawn / no contact events)
+#   - voice alerts fall back to console beeps if TTS is unavailable
+# Install them for the complete experience.

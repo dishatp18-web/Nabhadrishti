@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NABHADRISHTI · BAS Payload Operations Copilot</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="boot-overlay" class="boot-overlay">
+    <div class="boot-box">
+      <div class="boot-title">NABHADRISHTI · BAS COPILOT</div>
+      <div class="boot-sub" id="boot-status">Initializing uplink…</div>
+    </div>
+  </div>
+
+  <div class="hud-grid">
+
+    <!-- ================= HEADER ================= -->
+    <header class="panel header">
+      <div class="brand">
+        <span class="brand-mark">◤</span>
+        <div>
+          <h1>NABHADRISHTI · BHARATIYA ANTRIKSH STATION</h1>
+          <span class="brand-sub">AI PAYLOAD OPERATIONS COPILOT · DECK 2 · LAB BAY</span>
+        </div>
+      </div>
+      <div class="header-status">
+        <button id="btn-open-experiments" class="btn-exp-logs mono" title="Open Experiment Archive & Previous Logs">
+          <span class="btn-icon">🗂</span> EXPERIMENT LOGS
+          <span id="exp-count-badge" class="badge-count">…</span>
+        </button>
+        <div class="status-chip" id="sys-state" data-state="nominal">
+          <span class="dot"></span><span id="sys-state-text">NOMINAL</span>
+        </div>
+        <div class="clock mono" id="utc-clock">--:--:-- UTC</div>
+      </div>
+    </header>
+
+    <!-- ================= LEFT COLUMN: PROTOCOL ================= -->
+    <aside class="col-left">
+      <section class="panel">
+        <h2 class="panel-title">Mission Protocol</h2>
+        <div class="current-step" id="current-step">
+          <div class="step-idx mono" id="current-step-idx">STEP 1/3</div>
+          <div class="step-name" id="current-step-name">—</div>
+          <div class="step-desc" id="current-step-desc">Awaiting telemetry…</div>
+          <div class="progress-track">
+            <div class="progress-fill" id="current-step-progress" style="width:0%"></div>
+          </div>
+          <div class="ai-line mono" id="ai-line" data-state="idle">
+            <span id="ai-line-text">AI: standby</span>
+            <span id="ai-hold-badge" class="hold-badge hidden">HOLD</span>
+          </div>
+        </div>
+        <ol class="step-list" id="step-list"></ol>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">System Health</h2>
+        <ul class="kv-list mono" id="health-list">
+          <li><span>CAMERA</span><span id="health-camera">—</span></li>
+          <li><span>SOURCE</span><span id="health-source">—</span></li>
+          <li><span>DETECTOR</span><span id="health-detector">—</span></li>
+          <li><span>HANDS MODEL</span><span id="health-hands">—</span></li>
+          <li><span>VOICE</span><span id="health-voice">—</span></li>
+          <li><span>ACTION MODEL</span><span id="health-action">—</span></li>
+          <li><span>RECORDING</span><span id="health-recording">—</span></li>
+          <li><span>STREAM FPS</span><span id="health-fps">0.0</span></li>
+          <li><span>RESOLUTION</span><span id="health-res">—</span></li>
+          <li><span>UPTIME</span><span id="health-uptime">—</span></li>
+        </ul>
+      </section>
+    </aside>
+
+    <!-- ================= CENTER: VIDEO VIEWPORT ================= -->
+    <main class="col-center">
+      <section class="panel viewport-panel">
+        <div class="viewport-toolbar">
+          <span class="viewport-title">
+            <span id="rec-dot" class="rec-dot hidden" title="Recording locally"></span>
+            LIVE VIEWPORT · PAYLOAD CAM-01
+          </span>
+          <div class="toolbar-controls mono">
+            <select id="cam-select" class="cam-select" title="Switch camera source">
+              <option value="">CAM: …</option>
+            </select>
+            <label class="toggle">
+              <input type="checkbox" id="toggle-boxes" checked />
+              OVERLAY
+            </label>
+            <button id="btn-toolbar-experiments" class="link-chip highlight-chip" title="Browse past and active experiment logs">LOGS ARCHIVE</button>
+            <a class="link-chip" href="/api/audit/report" target="_blank" title="Timestamped experiment report">REPORT</a>
+            <a class="link-chip" href="/api/audit/log" target="_blank" title="Structured JSONL evidence trail">LOG</a>
+            <span class="link-chip" id="ws-status">WS:—</span>
+          </div>
+        </div>
+
+        <div class="viewport" id="viewport">
+          <img id="video-feed" src="/video_feed" alt="Payload camera feed"
+               draggable="false" />
+          <svg id="overlay-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none"></svg>
+          <div class="viewport-scanlines" aria-hidden="true"></div>
+          <div class="viewport-corner tl" aria-hidden="true"></div>
+          <div class="viewport-corner tr" aria-hidden="true"></div>
+          <div class="viewport-corner bl" aria-hidden="true"></div>
+          <div class="viewport-corner br" aria-hidden="true"></div>
+          <div id="alert-flash" class="alert-flash" aria-hidden="true"></div>
+          <div id="video-error" class="video-error hidden">
+            FEED OFFLINE — RECONNECTING…
+          </div>
+        </div>
+
+        <div class="viewport-footer mono">
+          <span id="frame-counter">FRM —</span>
+          <span id="hand-counter">HANDS 0</span>
+          <span id="object-counter">OBJ 0</span>
+          <span id="interaction-counter">INT 0</span>
+        </div>
+      </section>
+    </main>
+
+    <!-- ================= RIGHT COLUMN: TRACKING + ALERTS ================= -->
+    <aside class="col-right">
+      <section class="panel">
+        <h2 class="panel-title">Object Tracking</h2>
+        <div class="track-list" id="track-list">
+          <div class="empty-hint mono">NO CONTACTS</div>
+        </div>
+      </section>
+
+      <section class="panel alerts-panel">
+        <div class="panel-header-row">
+          <h2 class="panel-title">Alerts</h2>
+          <span id="alert-counter-badge" class="panel-badge mono">0 NOMINAL</span>
+        </div>
+        <div class="alert-feed" id="alert-feed">
+          <div class="empty-hint mono">ALL SYSTEMS NOMINAL</div>
+        </div>
+      </section>
+    </aside>
+
+  </div>
+
+  <!-- ================= PREVIOUS EXPERIMENT LOGS MODAL ================= -->
+  <div id="experiments-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-window">
+      <header class="modal-header">
+        <div class="modal-brand">
+          <span class="brand-mark">◤</span>
+          <div>
+            <h2 id="modal-title">NABHADRISHTI · EXPERIMENT LOG SYSTEM</h2>
+            <span class="modal-sub">BHARATIYA ANTRIKSH STATION · MISSION ARCHIVE & FLIGHT AUDITS</span>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button id="btn-refresh-experiments" class="btn-action mono" title="Refresh session logs">⟳ REFRESH</button>
+          <button id="btn-close-experiments" class="btn-close mono" title="Close Archive (Esc)">✕ ESC</button>
+        </div>
+      </header>
+
+      <div class="modal-body">
+        <!-- Left Column: Session Selector List -->
+        <aside class="exp-sidebar">
+          <div class="exp-search-bar">
+            <input type="text" id="exp-search-input" class="mono" placeholder="Filter by protocol or session…" />
+            <div class="exp-filter-tags mono">
+              <button class="filter-btn active" data-filter="all">ALL</button>
+              <button class="filter-btn" data-filter="completed">COMPLETED</button>
+              <button class="filter-btn" data-filter="active">ACTIVE</button>
+              <button class="filter-btn" data-filter="anomalies">ALERTS</button>
+            </div>
+          </div>
+          <div class="exp-list" id="exp-list">
+            <div class="loading-state mono">Loading mission archive…</div>
+          </div>
+        </aside>
+
+        <!-- Right Column: Detailed Experiment Explorer -->
+        <main class="exp-detail-pane" id="exp-detail-pane">
+          <div class="exp-detail-empty mono">SELECT AN EXPERIMENT FROM THE ARCHIVE TO INSPECT LOGS</div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
